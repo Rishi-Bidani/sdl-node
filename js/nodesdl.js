@@ -1,3 +1,4 @@
 const addon = require('./build/Release/addon');
 
-addon.hello(1000, 720, "hello world", true);
+addon.init(1000, 720, "hello world", true);
+console.log(addon.event)
