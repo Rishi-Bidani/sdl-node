@@ -1,9 +1,0 @@
-^C:\MY DEVELOPMENT\CPP\SDL-NODE\JS\X64\SDL2.DLL
-call mkdir "C:\MY DEVELOPMENT\cpp\sdl-node\js\build\Release" 2>nul & set ERRORLEVEL=0 & copy /Y "C:\MY DEVELOPMENT\cpp\sdl-node\js\x64\SDL2.dll" "C:\MY DEVELOPMENT\cpp\sdl-node\js\build\Release\SDL2.dll"
-if %errorlevel% neq 0 exit /b %errorlevel%
-^C:\MY DEVELOPMENT\CPP\SDL-NODE\JS\X64\SDL2MAIN.LIB
-call mkdir "C:\MY DEVELOPMENT\cpp\sdl-node\js\build\Release" 2>nul & set ERRORLEVEL=0 & copy /Y "C:\MY DEVELOPMENT\cpp\sdl-node\js\x64\SDL2main.lib" "C:\MY DEVELOPMENT\cpp\sdl-node\js\build\Release\SDL2main.lib"
-if %errorlevel% neq 0 exit /b %errorlevel%
-^C:\MY DEVELOPMENT\CPP\SDL-NODE\JS\X64\SDL2.LIB
-call mkdir "C:\MY DEVELOPMENT\cpp\sdl-node\js\build\Release" 2>nul & set ERRORLEVEL=0 & copy /Y "C:\MY DEVELOPMENT\cpp\sdl-node\js\x64\SDL2.lib" "C:\MY DEVELOPMENT\cpp\sdl-node\js\build\Release\SDL2.lib"
-if %errorlevel% neq 0 exit /b %errorlevel%
