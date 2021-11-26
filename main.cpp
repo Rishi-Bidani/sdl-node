@@ -78,61 +78,12 @@ namespace nodesdl
         {
             window = SDL_CreateWindow(stringTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
         }
-
-        // bool running = true;
-        // while (running)
-        // {
-        //     SDL_Event event;
-        //     while (SDL_PollEvent(&event))
-        //     {
-        //         switch (event.type)
-        //         {
-        //         case SDL_QUIT:
-        //             running = false;
-        //             break;
-
-        //         default:
-        //             break;
-        //         }
-        //     }
-        // }
     }
-
-    // auto event(){
-    //     SDL_Event event;
-    //     while (SDL_PollEvent(&event))
-    //     {
-    //         switch (event.type)
-    //         {
-    //         case SDL_QUIT:
-    //             return true;
-    //             break;
-
-    //         default:
-    //             break;
-    //         }
-    //     }
-    //     return false;
-    // }
 
     auto event(const FunctionCallbackInfo<Value> &args)
     {
         Isolate *isolate = args.GetIsolate();
         SDL_Event event;
-        // while (SDL_PollEvent(&event))
-        // {
-        //     switch (event.type)
-        //     {
-        //     case SDL_QUIT:
-        //         return uint32_t(1);
-        //         break;
-
-        //     default:
-        //         break;
-        //     }
-        //     std::cout << event.type << std::endl;
-        //     return event.type;
-        // }
 
         while (SDL_PollEvent(&event))
         {

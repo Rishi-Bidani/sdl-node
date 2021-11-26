@@ -6,7 +6,7 @@
     {
       "include_dirs": ["../src/include"],
       "target_name": "addon",
-      "sources": [ "../test.cpp"],
+      "sources": [ "../main.cpp"],
       "libraries": [
         "<(module_root_dir)/x64/SDL2main.lib", "<(module_root_dir)/x64/SDL2.lib"
       ],
