@@ -1,116 +1,194 @@
-#include <string>
 #include <iostream>
-using namespace std;
+#include <string>
 #include <stdio.h>
 // #include "SDL.h"
 #include "C:\MY DEVELOPMENT\cpp\sdl-node\src\include\SDL.h"
 #include "C:\Users\rishi\AppData\Local\node-gyp\Cache\17.0.1\include\node\node.h"
 
-using v8::Local;
-using v8::Object;
-
-// int sdlInit(int width, int height, string title, bool fullscreen)
-// {
-// 	SDL_Window* window;
-// 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-// 	int error = 1;
-
-// 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
-// 	{
-// 		printf("Error: SDL failed to initialize\nSDL Error: '%s'\n", SDL_GetError());
-// 	}
-
-// 	if (!window)
-// 	{
-// 		printf("Error: Failed to open window\nSDL Error: '%s'\n", SDL_GetError());
-// 		return { error, renderer };
-// 	}
-// 	if (!renderer)
-// 	{
-// 		printf("Error: Failed to create renderer\nSDL Error: '%s'\n", SDL_GetError());
-// 		return make_pair(error, *renderer);
-// 	}
-// 	error = 0;
-// 	return make_pair(error, *renderer);
-// }
-
-class nodeSDL
+namespace nodesdl
 {
-private:
-    SDL_Window *window;
-    SDL_Renderer *renderer;
+    using v8::Array;
+    using v8::Boolean;
+    using v8::Context;
+    using v8::Exception;
+    using v8::Function;
+    using v8::FunctionCallbackInfo;
+    using v8::Isolate;
+    using v8::Local;
+    using v8::Number;
+    using v8::Object;
+    using v8::String;
+    using v8::Value;
 
-public:
-    void init(int width, int height, string title, bool fullscreen)
+    double width;
+    int height;
+    std::string stringTitle;
+    bool fullscreen;
+    SDL_Window *window = NULL;
+    SDL_Renderer *renderer = NULL;
+
+    void setup(const FunctionCallbackInfo<Value> &args)
     {
+        Isolate *isolate = args.GetIsolate();
+        Local<Context> context = isolate->GetCurrentContext();
+
+        // Check the number of arguments passed.
+        if (args.Length() < 4)
+        {
+            isolate->ThrowException(
+                Exception::TypeError(
+                    String::NewFromUtf8(isolate, "Wrong number of arguments").ToLocalChecked()));
+            return;
+        }
+
+        // Check argument types
+        if (!args[0]->IsNumber() || !args[1]->IsNumber() || !args[2]->IsString() || !args[3]->IsBoolean())
+        {
+            isolate->ThrowException(
+                Exception::TypeError(
+                    String::NewFromUtf8(isolate, "Wrong arguments").ToLocalChecked()));
+            return;
+        }
+
+        // Get the arguments ----------------------
+        width = args[0].As<Number>()->Value();
+        height = args[1].As<Number>()->Value();
+
+        // Convert the argument to a C string.
+        v8::Local<v8::String> title;
+        title = args[2].As<v8::String>();
+        char *charTitle = new char[8192];
+        (*title)->WriteUtf8(isolate, charTitle);
+        stringTitle += charTitle;
+        delete charTitle;
+
+        fullscreen = args[3].As<Boolean>()->Value();
+        // ----------------------------------------
+
         if (SDL_Init(SDL_INIT_VIDEO) < 0)
         {
             printf("Error: SDL failed to initialize\nSDL Error: '%s'\n", SDL_GetError());
         }
+
         if (fullscreen)
         {
-            window = SDL_CreateWindow("SLD test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_RESIZABLE);
+            window = SDL_CreateWindow(stringTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_RESIZABLE);
         }
         else
         {
-            window = SDL_CreateWindow("SLD test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
+            window = SDL_CreateWindow(stringTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
         }
 
-        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+        // bool running = true;
+        // while (running)
+        // {
+        //     SDL_Event event;
+        //     while (SDL_PollEvent(&event))
+        //     {
+        //         switch (event.type)
+        //         {
+        //         case SDL_QUIT:
+        //             running = false;
+        //             break;
+
+        //         default:
+        //             break;
+        //         }
+        //     }
+        // }
     }
-};
 
-int main(int argc, char **argv)
-{
-    const int SCREEN_WIDTH = 720;
-    const int SCREEN_HEIGHT = 480;
-
-    // nodeSDL nodesdl;
-    // nodesdl.init(SCREEN_WIDTH, SCREEN_HEIGHT, "SDL test", true);
-
-    // bool running = true;
-    // while (running)
-    // {
+    // auto event(){
     //     SDL_Event event;
     //     while (SDL_PollEvent(&event))
     //     {
     //         switch (event.type)
     //         {
     //         case SDL_QUIT:
-    //             running = false;
+    //             return true;
     //             break;
 
     //         default:
     //             break;
     //         }
     //     }
-
-    // SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
-    // SDL_RenderClear(renderer);
-
-    // SDL_RenderPresent(renderer);
+    //     return false;
     // }
 
-    return 0;
+    auto event(const FunctionCallbackInfo<Value> &args)
+    {
+        Isolate *isolate = args.GetIsolate();
+        SDL_Event event;
+        // while (SDL_PollEvent(&event))
+        // {
+        //     switch (event.type)
+        //     {
+        //     case SDL_QUIT:
+        //         return uint32_t(1);
+        //         break;
+
+        //     default:
+        //         break;
+        //     }
+        //     std::cout << event.type << std::endl;
+        //     return event.type;
+        // }
+
+        while (SDL_PollEvent(&event))
+        {
+            switch (event.type)
+            {
+            case SDL_QUIT:
+                args.GetReturnValue().Set(String::NewFromUtf8(isolate, "QUIT").ToLocalChecked());
+                break;
+            default:
+                args.GetReturnValue().Set(uint32_t(-1));
+                break;
+            }
+        }
+    }
+
+    void screenColor(const FunctionCallbackInfo<Value> &args)
+    {
+        Isolate *isolate = args.GetIsolate();
+        Local<Context> context = isolate->GetCurrentContext();
+
+        // Check the number of arguments passed.
+        if (args.Length() < 3)
+        {
+            isolate->ThrowException(
+                Exception::TypeError(
+                    String::NewFromUtf8(isolate, "Wrong number of arguments").ToLocalChecked()));
+            return;
+        }
+
+        // Check argument types
+        if (!args[0]->IsNumber())
+        {
+            isolate->ThrowException(
+                Exception::TypeError(
+                    String::NewFromUtf8(isolate, "Wrong arguments").ToLocalChecked()));
+            return;
+        }
+
+        // Get the arguments ----------------------
+        int RGB_R = args[0].As<Number>()->Value();
+        int RGB_G = args[1].As<Number>()->Value();
+        int RGB_B = args[2].As<Number>()->Value();
+
+        // ----------------------------------------
+        SDL_Surface *screen = SDL_GetWindowSurface(window);
+        Uint32 color = SDL_MapRGB(screen->format, RGB_R, RGB_G, RGB_B);
+        SDL_FillRect(screen, NULL, color);
+        SDL_UpdateWindowSurface(window);
+    }
+
+    void Initialise(Local<Object> exports)
+    {
+        NODE_SET_METHOD(exports, "init", reinterpret_cast<v8::FunctionCallback>(setup));
+        NODE_SET_METHOD(exports, "event", reinterpret_cast<v8::FunctionCallback>(event));
+        NODE_SET_METHOD(exports, "screenColor", reinterpret_cast<v8::FunctionCallback>(screenColor));
+    }
+
+    NODE_MODULE(NODE_GYP_MODULE_NAME, Initialise);
 }
-
-// void nodesdlInit(int width, int height, string title, bool fullscreen)
-// {
-//     nodeSDL nodesdl;
-//     nodesdl.init(width, height, title, fullscreen);
-// }
-
-// void Init(v8::Local<v8::Object> exports)
-// {
-//     // nodeSDL nodesdl;
-//     // NODE_SET_METHOD(exports, "", reinterpret_cast<v8::FunctionCallback>(nodeSDL));
-//     NODE_SET_METHOD(exports, "", reinterpret_cast<v8::FunctionCallback>(nodesdlInit));
-// }
-
-void Init(v8::Local<v8::Object> exports)
-{
-    int a = 1;
-    NODE_SET_METHOD(exports, "", reinterpret_cast<v8::FunctionCallback>(a));
-}
-
-NODE_MODULE(addon, Init);
