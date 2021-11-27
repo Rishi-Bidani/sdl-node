@@ -6,7 +6,7 @@
     {
       "include_dirs": ["../src/include"],
       "target_name": "nodesdl",
-      "sources": [ "../main.cpp"],
+      "sources": [ "../cpp/main.cpp"],
       "libraries": [
         "<(module_root_dir)/x64/SDL2main.lib", "<(module_root_dir)/x64/SDL2.lib"
       ],

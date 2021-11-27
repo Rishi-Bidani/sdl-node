@@ -3,8 +3,12 @@
 #include <sstream>
 #include <stdio.h>
 // #include "SDL.h"
-#include "C:\MY DEVELOPMENT\cpp\sdl-node\src\include\SDL.h"
-#include "C:\Users\rishi\AppData\Local\node-gyp\Cache\17.0.1\include\node\node.h"
+#include "SDL.h"
+#include "../../../../Users/rishi/AppData/Local/node-gyp/Cache/17.0.1/include/node/node.h"
+
+
+// Custom Classes
+#include "./classes/Rect.h"
 
 namespace nodesdl
 {
@@ -25,8 +29,17 @@ namespace nodesdl
     int height;
     std::string stringTitle;
     bool fullscreen;
-    SDL_Window *window = NULL;
-    SDL_Renderer *renderer = NULL;
+    SDL_Window *window = nullptr;
+    SDL_Renderer *renderer = nullptr;
+
+    // bool checkArgs(const FunctionCallbackInfo<Value>&args, int numberOfArguments)
+    // {
+    //     if (args.Length() != numberOfArguments)
+    //     {
+    //         return false;
+    //     }
+    //     return true;
+    // }
 
     void setup(const FunctionCallbackInfo<Value> &args)
     {
@@ -61,7 +74,7 @@ namespace nodesdl
         char *charTitle = new char[8192];
         (*title)->WriteUtf8(isolate, charTitle);
         stringTitle += charTitle;
-        delete charTitle;
+        delete[] charTitle;
 
         fullscreen = args[3].As<Boolean>()->Value();
         // ----------------------------------------
@@ -140,7 +153,8 @@ namespace nodesdl
         Isolate *isolate = args.GetIsolate();
         Local<Context> context = isolate->GetCurrentContext();
         // Check the number of arguments passed.
-        if (args.Length() < 6)
+        const int numberOfArguments = 6;
+        if (args.Length() < numberOfArguments)
         {
             isolate->ThrowException(
                 Exception::TypeError(
@@ -148,12 +162,15 @@ namespace nodesdl
             return;
         }
         // Check argument types
-        if (!args[0]->IsNumber())
+        for (int i = 0; i < numberOfArguments; i++)
         {
-            isolate->ThrowException(
-                Exception::TypeError(
-                    String::NewFromUtf8(isolate, "Wrong arguments").ToLocalChecked()));
-            return;
+            if (!args[i]->IsNumber())
+            {
+                isolate->ThrowException(
+                    Exception::TypeError(
+                        String::NewFromUtf8(isolate, "Wrong arguments").ToLocalChecked()));
+                return;
+            }
         }
 
         // Get the arguments ----------------------
@@ -181,7 +198,7 @@ namespace nodesdl
         std::stringstream ss;
         ss << temp_screen;
         std::string str_screen = ss.str();
-        std::cout << str_screen;
+        // std::cout << str_screen;
 
         args.GetReturnValue().Set(String::NewFromUtf8(isolate, str_screen.c_str()).ToLocalChecked());
         // std::cout << &rect;
@@ -224,6 +241,63 @@ namespace nodesdl
         SDL_UpdateWindowSurface(window);
     }
 
+    void updateRect(const FunctionCallbackInfo<Value> &args)
+    {
+        Isolate *isolate = args.GetIsolate();
+
+        // Check the number of arguments passed.
+        if (args.Length() < 1)
+        {
+            isolate->ThrowException(
+                Exception::TypeError(
+                    String::NewFromUtf8(isolate, "Wrong number of arguments").ToLocalChecked()));
+            return;
+        }
+
+        // Check argument types
+        const int numberOfArguments = 7;
+        if (!args[0]->IsString())
+        {
+            isolate->ThrowException(
+                Exception::TypeError(
+                    String::NewFromUtf8(isolate, "Wrong arguments").ToLocalChecked()));
+            return;
+        }
+        for (int i = 1; i < numberOfArguments; i++)
+        {
+            if (!args[i]->IsNumber())
+            {
+                isolate->ThrowException(
+                    Exception::TypeError(
+                        String::NewFromUtf8(isolate, "Wrong arguments").ToLocalChecked()));
+                return;
+            }
+        }
+
+        // Get the arguments ----------------------
+        Local<String> str_shape_temp = args[0].As<String>();
+        char *charStr = new char[8192];
+        (*str_shape_temp)->WriteUtf8(isolate, charStr);
+        std::string str_shape = charStr;
+        delete charStr;
+
+        int RGB_R = args[1].As<Number>()->Value();
+        int RGB_G = args[2].As<Number>()->Value();
+        int RGB_B = args[3].As<Number>()->Value();
+
+        int x = args[4].As<Number>()->Value();
+        int y = args[5].As<Number>()->Value();
+        int w = args[6].As<Number>()->Value();
+        int h = args[7].As<Number>()->Value();
+        // ----------------------------------------
+        int SDL_RenderClear(SDL_Renderer * renderer);
+
+        SDL_Surface *screen = SDL_GetWindowSurface(window);
+        SDL_Surface *temp_screen = SDL_LoadBMP(str_shape.c_str());
+        SDL_BlitSurface(temp_screen, NULL, screen, NULL);
+        SDL_UpdateWindowSurface(window);
+    }
+
     void Initialise(Local<Object> exports)
     {
         NODE_SET_METHOD(exports, "init", reinterpret_cast<v8::FunctionCallback>(setup));
@@ -231,6 +305,7 @@ namespace nodesdl
         NODE_SET_METHOD(exports, "screenColor", reinterpret_cast<v8::FunctionCallback>(screenColor));
         NODE_SET_METHOD(exports, "rect", reinterpret_cast<v8::FunctionCallback>(rect));
         NODE_SET_METHOD(exports, "blit", reinterpret_cast<v8::FunctionCallback>(blit));
+        NODE_SET_METHOD(exports, "updateRect", reinterpret_cast<v8::FunctionCallback>(updateRect));
     }
 
     NODE_MODULE(NODE_GYP_MODULE_NAME, Initialise);

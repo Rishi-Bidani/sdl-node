@@ -2,8 +2,8 @@
 #include <string>
 #include <stdio.h>
 // #include "SDL.h"
-#include "C:\MY DEVELOPMENT\cpp\sdl-node\src\include\SDL.h"
-#include "C:\Users\rishi\AppData\Local\node-gyp\Cache\17.0.1\include\node\node.h"
+#include "../src/include/SDL.h"
+#include "../../../../Users/rishi/AppData/Local/node-gyp/Cache/17.0.1/include/node/node.h"
 
 namespace nodesdl
 {
