@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <stdio.h>
 // #include "SDL.h"
 #include "C:\MY DEVELOPMENT\cpp\sdl-node\src\include\SDL.h"
@@ -134,11 +135,102 @@ namespace nodesdl
         SDL_UpdateWindowSurface(window);
     }
 
+    void rect(const FunctionCallbackInfo<Value> &args)
+    {
+        Isolate *isolate = args.GetIsolate();
+        Local<Context> context = isolate->GetCurrentContext();
+        // Check the number of arguments passed.
+        if (args.Length() < 6)
+        {
+            isolate->ThrowException(
+                Exception::TypeError(
+                    String::NewFromUtf8(isolate, "Wrong number of arguments").ToLocalChecked()));
+            return;
+        }
+        // Check argument types
+        if (!args[0]->IsNumber())
+        {
+            isolate->ThrowException(
+                Exception::TypeError(
+                    String::NewFromUtf8(isolate, "Wrong arguments").ToLocalChecked()));
+            return;
+        }
+
+        // Get the arguments ----------------------
+        int RGB_R = args[0].As<Number>()->Value();
+        int RGB_G = args[1].As<Number>()->Value();
+        int RGB_B = args[2].As<Number>()->Value();
+
+        int x = args[3].As<Number>()->Value();
+        int y = args[4].As<Number>()->Value();
+        int w = args[5].As<Number>()->Value();
+        int h = args[6].As<Number>()->Value();
+
+        // ----------------------------------------
+
+        SDL_Rect rect;
+        rect.x = 0;
+        rect.y = 0;
+        rect.w = 10;
+        rect.h = 10;
+
+        SDL_Surface *screen = SDL_GetWindowSurface(window);
+        Uint32 color = SDL_MapRGB(screen->format, RGB_R, RGB_G, RGB_B);
+        SDL_FillRect(screen, &rect, color);
+        const void *temp_screen = static_cast<const void *>(screen);
+        std::stringstream ss;
+        ss << temp_screen;
+        std::string str_screen = ss.str();
+        std::cout << str_screen;
+
+        args.GetReturnValue().Set(String::NewFromUtf8(isolate, str_screen.c_str()).ToLocalChecked());
+        // std::cout << &rect;
+        // SDL_UpdateWindowSurface(window);
+    }
+
+    void blit(const FunctionCallbackInfo<Value> &arg)
+    {
+        Isolate *isolate = arg.GetIsolate();
+        Local<Context> context = isolate->GetCurrentContext();
+        // Check the number of arguments passed.
+        if (arg.Length() < 1)
+        {
+            isolate->ThrowException(
+                Exception::TypeError(
+                    String::NewFromUtf8(isolate, "Wrong number of arguments").ToLocalChecked()));
+            return;
+        }
+        // Check argument types
+        if (!arg[0]->IsString())
+        {
+            isolate->ThrowException(
+                Exception::TypeError(
+                    String::NewFromUtf8(isolate, "Wrong arguments").ToLocalChecked()));
+            return;
+        }
+
+        // Get the arguments ----------------------
+        v8::Local<v8::String> str = arg[0].As<v8::String>();
+        char *charStr = new char[8192];
+        (*str)->WriteUtf8(isolate, charStr);
+        std::string str_screen = charStr;
+        delete charStr;
+
+        // ----------------------------------------
+
+        SDL_Surface *screen = SDL_GetWindowSurface(window);
+        SDL_Surface *temp_screen = SDL_LoadBMP(str_screen.c_str());
+        SDL_BlitSurface(temp_screen, NULL, screen, NULL);
+        SDL_UpdateWindowSurface(window);
+    }
+
     void Initialise(Local<Object> exports)
     {
         NODE_SET_METHOD(exports, "init", reinterpret_cast<v8::FunctionCallback>(setup));
         NODE_SET_METHOD(exports, "event", reinterpret_cast<v8::FunctionCallback>(event));
         NODE_SET_METHOD(exports, "screenColor", reinterpret_cast<v8::FunctionCallback>(screenColor));
+        NODE_SET_METHOD(exports, "rect", reinterpret_cast<v8::FunctionCallback>(rect));
+        NODE_SET_METHOD(exports, "blit", reinterpret_cast<v8::FunctionCallback>(blit));
     }
 
     NODE_MODULE(NODE_GYP_MODULE_NAME, Initialise);

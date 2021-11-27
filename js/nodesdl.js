@@ -1,17 +1,21 @@
-const addon = require('./build/Release/addon');
+const nodesdl = require('./build/Release/nodesdl');
 
-addon.init(1000, 720, "hello world", true);
-const event = addon.event;
+nodesdl.init(1000, 720, "hello world", false);
+const event = nodesdl.event;
 
 // console.log("event: " + event());
-addon.screenColor(255, 100, 0);
+nodesdl.screenColor(255, 100, 0);
+
+
+// console.log("rect1: " + rect1);
 
 while (true) {
+    const rect1 = nodesdl.rect(0, 0, 100, 100, 255, 0, 0);
+    nodesdl.blit(rect1);
     const e = event();
     if (e === "QUIT") {
         break;
     }
-
 }
 
 // while (true) {
