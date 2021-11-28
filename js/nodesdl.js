@@ -6,11 +6,11 @@ const event = nodesdl.event;
 // console.log("event: " + event());
 nodesdl.screenColor(255, 100, 0);
 
-
-// console.log("rect1: " + rect1);
-const rect1 = nodesdl.rect(0, 0, 100, 100, 255, 0, 0);
+const rect1 = nodesdl.rect(10, 10, 100, 100, 0, 0, 0);
 nodesdl.blit(rect1);
-nodesdl.updateRect(rect1, 0, 0, 0, 0, 0, 200, 200);
+console.log("rect1: " + rect1);
+
+// nodesdl.updateRect(rect1, 0, 0, 0, 0, 0, 200, 200);
 
 while (true) {
 
