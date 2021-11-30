@@ -10,6 +10,7 @@
 
 // Custom Classes
 #include "./classes/Rect.cpp"
+#include "./classes/Clock.cpp"
 
 namespace nodesdl {
     using v8::Array;
@@ -31,6 +32,9 @@ namespace nodesdl {
     bool fullscreen;
     SDL_Window *window = nullptr;
     SDL_Renderer *renderer = nullptr;
+    int RGB_R;
+    int RGB_G;
+    int RGB_B;
 
     // bool checkArgs(const FunctionCallbackInfo<Value>&args, int numberOfArguments)
     // {
@@ -43,7 +47,7 @@ namespace nodesdl {
 
     void setup(const FunctionCallbackInfo<Value> &args) {
         Isolate *isolate = args.GetIsolate();
-        Local<Context> context = isolate->GetCurrentContext();
+//        Local<Context> context = isolate->GetCurrentContext();
 
         // Check the number of arguments passed.
         if (args.Length() < 4) {
@@ -126,15 +130,15 @@ namespace nodesdl {
         }
 
         // Get the arguments ----------------------
-        int RGB_R = args[0].As<Number>()->Value();
-        int RGB_G = args[1].As<Number>()->Value();
-        int RGB_B = args[2].As<Number>()->Value();
+        RGB_R = args[0].As<Number>()->Value();
+        RGB_G = args[1].As<Number>()->Value();
+        RGB_B = args[2].As<Number>()->Value();
 
         // ----------------------------------------
         SDL_Surface *screen = SDL_GetWindowSurface(window);
         Uint32 color = SDL_MapRGB(screen->format, RGB_R, RGB_G, RGB_B);
         SDL_FillRect(screen, NULL, color);
-        SDL_UpdateWindowSurface(window);
+//        SDL_UpdateWindowSurface(window);
     }
 
     void rect(const FunctionCallbackInfo<Value> &args) {
@@ -172,7 +176,7 @@ namespace nodesdl {
 
         Rect newRect;
         Rect *rectPointer;
-        std::cout << "Provided width: " << w << std::endl;
+//        std::cout << "Provided width: " << w << std::endl;
         SDL_Surface *screen = SDL_GetWindowSurface(window);
         newRect.init(screen, x, y, w, h, RGB_R, RGB_G, RGB_B);
 
@@ -182,7 +186,7 @@ namespace nodesdl {
         std::stringstream ss;
         ss << rectPointer;
         ss >> str_rectPointer;
-        std::cout << "string stream: " << str_rectPointer << std::endl;
+//        std::cout << "string stream: " << str_rectPointer << std::endl;
         args.GetReturnValue().Set(String::NewFromUtf8(isolate, str_rectPointer.c_str()).ToLocalChecked());
     }
 
@@ -286,6 +290,40 @@ namespace nodesdl {
         SDL_UpdateWindowSurface(window);
     }
 
+    void clear() {
+        SDL_Surface *screen = SDL_GetWindowSurface(window);
+        Uint32 color = SDL_MapRGB(screen->format, RGB_R, RGB_G, RGB_B);
+        SDL_RenderClear(renderer);
+        SDL_FillRect(screen, NULL, color);
+
+//        SDL_SetRenderDrawColor(renderer, RGB_R, RGB_G, RGB_B, 255);
+//        SDL_RenderPresent(renderer);
+//        SDL_RenderClear(renderer);
+//        SDL_UpdateWindowSurface(window);
+    }
+
+    void update() {
+        SDL_UpdateWindowSurface(window);
+    }
+
+    void getTick(const FunctionCallbackInfo<Value> &arg) {
+        Isolate *isolate = arg.GetIsolate();
+
+        Clock Time;
+        Uint64 time = Time.getTicks();
+//        std::cout << time;
+
+        if (arg.Length() >= 1) {
+            isolate->ThrowException(
+                    Exception::TypeError(
+                            String::NewFromUtf8(isolate, "Wrong number of arguments").ToLocalChecked()));
+            return;
+        }
+
+        arg.GetReturnValue().Set(uint32_t(time));
+
+    }
+
     void Initialise(Local<Object> exports) {
         NODE_SET_METHOD(exports, "init", reinterpret_cast<v8::FunctionCallback>(setup));
         NODE_SET_METHOD(exports, "event", reinterpret_cast<v8::FunctionCallback>(event));
@@ -293,6 +331,9 @@ namespace nodesdl {
         NODE_SET_METHOD(exports, "rect", reinterpret_cast<v8::FunctionCallback>(rect));
         NODE_SET_METHOD(exports, "blit", reinterpret_cast<v8::FunctionCallback>(blit));
         NODE_SET_METHOD(exports, "updateRect", reinterpret_cast<v8::FunctionCallback>(updateRect));
+        NODE_SET_METHOD(exports, "clear", reinterpret_cast<v8::FunctionCallback>(clear));
+        NODE_SET_METHOD(exports, "getTick", reinterpret_cast<v8::FunctionCallback>(getTick));
+        NODE_SET_METHOD(exports, "update", reinterpret_cast<v8::FunctionCallback>(update));
     }
 
     NODE_MODULE(NODE_GYP_MODULE_NAME, Initialise);

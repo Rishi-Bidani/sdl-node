@@ -16,6 +16,9 @@ class Rect {
         this.rect = nodesdl.rect(this._x, this._y, this._w, this._h, this._r, this._g, this._b);
         nodesdl.blit(this.rect);
     }
+    get x() {
+        return this._x;
+    }
 
     set y(y) {
         this._y = y;
