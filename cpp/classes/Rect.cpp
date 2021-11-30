@@ -6,18 +6,19 @@
 
 class Rect {
 public:
-    int x = 0;
-    int y = 0;
-    int width = 0;
-    int height = 0;
-    int RGB_R{};
-    int RGB_G{};
-    int RGB_B{};
+    double x = 0;
+    double y = 0;
+    double width = 0;
+    double height = 0;
+    double RGB_R{};
+    double RGB_G{};
+    double RGB_B{};
     SDL_Surface *screen = nullptr;
     SDL_Rect rect{};
-    SDL_Surface *rectSurface;
+    SDL_Surface *rectSurface{};
 
-    SDL_Rect init(SDL_Surface *Window, int X, int Y, int Width, int Height, int red, int green, int blue) {
+    SDL_Rect
+    init(SDL_Surface *Window, double X, double Y, double Width, double Height, double red, double green, double blue) {
         screen = Window;
 
         x = X;
@@ -39,7 +40,7 @@ public:
         return rect;
     }
 
-    SDL_Rect update(int X, int Y, int Width, int Height, int red, int green, int blue) {
+    SDL_Rect update(double X, double Y, double Width, double Height, double red, double green, double blue) {
         x = X;
         y = Y;
         width = Width;
@@ -58,8 +59,8 @@ public:
         return rect;
     }
 
-    void blit(SDL_Window *window) {
-        SDL_BlitSurface(rectSurface, NULL, screen, NULL);
+    void blit(SDL_Window *window) const {
+        SDL_BlitSurface(rectSurface, nullptr, screen, nullptr);
 //        SDL_UpdateWindowSurface(window);
     }
 

@@ -10,6 +10,7 @@
 
 // Custom Classes
 #include "./classes/Rect.cpp"
+#include "./classes/Clock.cpp"
 
 namespace nodesdl {
     using v8::Array;
@@ -31,6 +32,9 @@ namespace nodesdl {
     bool fullscreen;
     SDL_Window *window = nullptr;
     SDL_Renderer *renderer = nullptr;
+    int RGB_R;
+    int RGB_G;
+    int RGB_B;
 
     // bool checkArgs(const FunctionCallbackInfo<Value>&args, int numberOfArguments)
     // {
@@ -43,7 +47,7 @@ namespace nodesdl {
 
     void setup(const FunctionCallbackInfo<Value> &args) {
         Isolate *isolate = args.GetIsolate();
-        Local<Context> context = isolate->GetCurrentContext();
+//        Local<Context> context = isolate->GetCurrentContext();
 
         // Check the number of arguments passed.
         if (args.Length() < 4) {
@@ -126,15 +130,15 @@ namespace nodesdl {
         }
 
         // Get the arguments ----------------------
-        int RGB_R = args[0].As<Number>()->Value();
-        int RGB_G = args[1].As<Number>()->Value();
-        int RGB_B = args[2].As<Number>()->Value();
+        RGB_R = args[0].As<Number>()->Value();
+        RGB_G = args[1].As<Number>()->Value();
+        RGB_B = args[2].As<Number>()->Value();
 
         // ----------------------------------------
         SDL_Surface *screen = SDL_GetWindowSurface(window);
         Uint32 color = SDL_MapRGB(screen->format, RGB_R, RGB_G, RGB_B);
         SDL_FillRect(screen, NULL, color);
-        SDL_UpdateWindowSurface(window);
+//        SDL_UpdateWindowSurface(window);
     }
 
     void rect(const FunctionCallbackInfo<Value> &args) {
@@ -159,67 +163,31 @@ namespace nodesdl {
         }
 
         // Get the arguments ----------------------
-        int RGB_R = args[0].As<Number>()->Value();
-        int RGB_G = args[1].As<Number>()->Value();
-        int RGB_B = args[2].As<Number>()->Value();
+        int x = args[0].As<Number>()->Value();
+        int y = args[1].As<Number>()->Value();
+        int w = args[2].As<Number>()->Value();
+        int h = args[3].As<Number>()->Value();
 
-        int x = args[3].As<Number>()->Value();
-        int y = args[4].As<Number>()->Value();
-        int w = args[5].As<Number>()->Value();
-        int h = args[6].As<Number>()->Value();
+        int RGB_R = args[4].As<Number>()->Value();
+        int RGB_G = args[5].As<Number>()->Value();
+        int RGB_B = args[6].As<Number>()->Value();
 
         // ----------------------------------------
 
-//        SDL_Rect rect;
-//        rect.x = 0;
-//        rect.y = 0;
-//        rect.w = 10;
-//        rect.h = 10;
         Rect newRect;
         Rect *rectPointer;
-        std::cout << "Provided width: " << w << std::endl;
+//        std::cout << "Provided width: " << w << std::endl;
         SDL_Surface *screen = SDL_GetWindowSurface(window);
-        newRect.init(screen, x, y, 100, 100, RGB_R, RGB_G, RGB_B);
-//        newRect.blit(window);
+        newRect.init(screen, x, y, w, h, RGB_R, RGB_G, RGB_B);
 
         rectPointer = &newRect; // created pointer to current rect class-object
-
-//        SDL_Surface *screen = SDL_GetWindowSurface(window);
-//        Uint32 color = SDL_MapRGB(screen->format, RGB_R, RGB_G, RGB_B);
-//        SDL_FillRect(screen, &rect, color);
 
         std::string str_rectPointer;
         std::stringstream ss;
         ss << rectPointer;
         ss >> str_rectPointer;
-
-        std::cout << "string stream: " << str_rectPointer << std::endl;
-
+//        std::cout << "string stream: " << str_rectPointer << std::endl;
         args.GetReturnValue().Set(String::NewFromUtf8(isolate, str_rectPointer.c_str()).ToLocalChecked());
-        // SDL_UpdateWindowSurface(window);
-/*
- * //        const void *temp_screen = static_cast<const void *>(screen);
-        const void *temp_rect_pointer = static_cast<const void *>(rectPointer);
-        std::stringstream ss;
-//        ss << temp_screen;
-        ss << temp_rect_pointer;
-//        std::string str_screen = ss.str();
-        std::string str_rect_pointer;
-//         std::cout << str_screen;
-
-//        std::cout << str_rect_pointer;
-
- */
-
-
-        /*
-         * // working with intptr_t and uintptr_t
-        std::intptr_t str_rectPointer;
-        str_rectPointer = reinterpret_cast<std::intptr_t>(rectPointer);
-
-        std::cout << "str_rectPointer: " << str_rectPointer << std::endl;
-        std::cout << "str_rectPointer uint: " << reinterpret_cast<uintptr_t&>(str_rectPointer) << std::endl;
-         */
     }
 
     void blit(const FunctionCallbackInfo<Value> &arg) {
@@ -246,38 +214,13 @@ namespace nodesdl {
         (*raw_pointer)->WriteUtf8(isolate, char_rawPointer);
         std::string str_pointer = char_rawPointer;
         delete char_rawPointer;
-
-
-//        std::cout << "int_pointer: " << std::hex << str_pointer << std::endl;
-
         // ----------------------------------------
-
-        SDL_Surface *screen = SDL_GetWindowSurface(window);
-
-//        Rect *myObj = int_pointer;
-//        auto rect = (myObj)->getWidth();
-//        std::cout << rect;
-
         std::stringstream ss;
         ss << str_pointer;
         long long unsigned int i;
         ss >> std::hex >> i;
         Rect *myObj = reinterpret_cast<Rect *>(reinterpret_cast<int *>(i));
-
-//        std::cout << myObj << (myObj)->getWidth() << std::endl;
         myObj->blit(window);
-
-//        SDL_Surface *temp_obj = SDL_LoadBMP(myObj->getRect());
-//        SDL_BlitSurface(myObj->getRect(), NULL, screen, NULL);
-//        SDL_UpdateWindowSurface(window);
-
-
-//        SDL_Surface *temp_screen = SDL_LoadBMP(str_screen.c_str());
-//        Rect theObj = &str_screen.getRect();
-//        std::cout << &str_screen;
-//        SDL_Surface *temp_obj = SDL_LoadBMP(theObj);
-//        SDL_BlitSurface(temp_obj, NULL, screen, NULL);
-//        SDL_UpdateWindowSurface(window);
     }
 
     void updateRect(const FunctionCallbackInfo<Value> &args) {
@@ -292,7 +235,7 @@ namespace nodesdl {
         }
 
         // Check argument types
-        const int numberOfArguments = 7;
+        const int numberOfArguments = 8;
         if (!args[0]->IsString()) {
             isolate->ThrowException(
                     Exception::TypeError(
@@ -315,21 +258,64 @@ namespace nodesdl {
         std::string str_shape = charStr;
         delete charStr;
 
-        int RGB_R = args[1].As<Number>()->Value();
-        int RGB_G = args[2].As<Number>()->Value();
-        int RGB_B = args[3].As<Number>()->Value();
+        int x = args[1].As<Number>()->Value();
+        int y = args[2].As<Number>()->Value();
+        int w = args[2].As<Number>()->Value();
+        int h = args[4].As<Number>()->Value();
 
-        int x = args[4].As<Number>()->Value();
-        int y = args[5].As<Number>()->Value();
-        int w = args[6].As<Number>()->Value();
-        int h = args[7].As<Number>()->Value();
+        int RGB_R = args[5].As<Number>()->Value();
+        int RGB_G = args[6].As<Number>()->Value();
+        int RGB_B = args[7].As<Number>()->Value();
+
+
+        Local<String> raw_pointer = args[0].As<String>();
+        char *char_rawPointer = new char[8192];
+        (*raw_pointer)->WriteUtf8(isolate, char_rawPointer);
+        std::string str_pointer = char_rawPointer;
+        delete char_rawPointer;
         // ----------------------------------------
-        int SDL_RenderClear(SDL_Renderer *renderer);
+        std::stringstream ss;
+        ss << str_pointer;
+        long long unsigned int i;
+        ss >> std::hex >> i;
+        Rect *myObj = reinterpret_cast<Rect *>(reinterpret_cast<int *>(i));
+        myObj->update(x, y, w, h, RGB_R, RGB_G, RGB_B);
+        // ----------------------------------------
+//        int SDL_RenderClear(SDL_Renderer *renderer);
+//
+//        SDL_Surface *screen = SDL_GetWindowSurface(window);
+//        SDL_Surface *temp_screen = SDL_LoadBMP(str_shape.c_str());
+//        SDL_BlitSurface(temp_screen, NULL, screen, NULL);
 
-        SDL_Surface *screen = SDL_GetWindowSurface(window);
-        SDL_Surface *temp_screen = SDL_LoadBMP(str_shape.c_str());
-        SDL_BlitSurface(temp_screen, NULL, screen, NULL);
         SDL_UpdateWindowSurface(window);
+    }
+
+    void clear() {
+        SDL_Surface *screen = SDL_GetWindowSurface(window);
+        Uint32 color = SDL_MapRGB(screen->format, RGB_R, RGB_G, RGB_B);
+        SDL_RenderClear(renderer);
+        SDL_FillRect(screen, NULL, color);
+    }
+
+    void update() {
+        SDL_UpdateWindowSurface(window);
+    }
+
+    void getTick(const FunctionCallbackInfo<Value> &arg) {
+        Isolate *isolate = arg.GetIsolate();
+
+        Clock Time;
+        Uint64 time = Time.getTicks();
+
+        if (arg.Length() >= 1) {
+            isolate->ThrowException(
+                    Exception::TypeError(
+                            String::NewFromUtf8(isolate, "Wrong number of arguments").ToLocalChecked()));
+            return;
+        }
+
+        arg.GetReturnValue().Set(uint32_t(time));
+
     }
 
     void Initialise(Local<Object> exports) {
@@ -339,6 +325,9 @@ namespace nodesdl {
         NODE_SET_METHOD(exports, "rect", reinterpret_cast<v8::FunctionCallback>(rect));
         NODE_SET_METHOD(exports, "blit", reinterpret_cast<v8::FunctionCallback>(blit));
         NODE_SET_METHOD(exports, "updateRect", reinterpret_cast<v8::FunctionCallback>(updateRect));
+        NODE_SET_METHOD(exports, "clear", reinterpret_cast<v8::FunctionCallback>(clear));
+        NODE_SET_METHOD(exports, "getTick", reinterpret_cast<v8::FunctionCallback>(getTick));
+        NODE_SET_METHOD(exports, "update", reinterpret_cast<v8::FunctionCallback>(update));
     }
 
     NODE_MODULE(NODE_GYP_MODULE_NAME, Initialise);

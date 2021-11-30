@@ -6,7 +6,12 @@
     {
       "include_dirs": ["../src/include"],
       "target_name": "nodesdl",
-      "sources": [ "../cpp/main.cpp", "../cpp/classes/Rect.cpp", "../cpp/classes/Clock.cpp"],
+      "sources": [
+        "../cpp/main.cpp",
+        "../cpp/classes/Rect.cpp",
+        "../cpp/classes/Clock.cpp",
+        "../cpp/classes/keyhandler.cpp"
+      ],
       "libraries": [
         "<(module_root_dir)/x64/SDL2main.lib", "<(module_root_dir)/x64/SDL2.lib"
       ],

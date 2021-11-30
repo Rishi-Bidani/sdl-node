@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <cstdint>
 #include <sstream>
+#include <algorithm> // for copy
+#include <iterator> // for ostream_iterator
 // #include "SDL.h"
 #include "SDL.h"
 #include "../../../../Users/rishi/AppData/Local/node-gyp/Cache/17.0.1/include/node/node.h"
@@ -11,6 +13,7 @@
 // Custom Classes
 #include "./classes/Rect.cpp"
 #include "./classes/Clock.cpp"
+#include "./classes/keyhandler.cpp"
 
 namespace nodesdl {
     using v8::Array;
@@ -27,14 +30,14 @@ namespace nodesdl {
     using v8::Value;
 
     double width;
-    int height;
+    double height;
     std::string stringTitle;
     bool fullscreen;
     SDL_Window *window = nullptr;
     SDL_Renderer *renderer = nullptr;
-    int RGB_R;
-    int RGB_G;
-    int RGB_B;
+    double RGB_R;
+    double RGB_G;
+    double RGB_B;
 
     // bool checkArgs(const FunctionCallbackInfo<Value>&args, int numberOfArguments)
     // {
@@ -93,14 +96,65 @@ namespace nodesdl {
         }
     }
 
+
+//    /* Print modifier info */
+//    void PrintModifiers(SDL_Keymod mod) {
+//        printf("Modifers: ");
+//
+//        /* If there are none then say so and return */
+//        if (mod == KMOD_NONE) {
+//            printf("None\n");
+//            return;
+//        }
+//
+//        /* Check for the presence of each SDLMod value */
+//        /* This looks messy, but there really isn't    */
+//        /* a clearer way.                              */
+//        if (mod & KMOD_NUM) printf("NUMLOCK ");
+//        if (mod & KMOD_CAPS) printf("CAPSLOCK ");
+//        if (mod & KMOD_LCTRL) printf("LCTRL ");
+//        if (mod & KMOD_RCTRL) printf("RCTRL ");
+//        if (mod & KMOD_RSHIFT) printf("RSHIFT ");
+//        if (mod & KMOD_LSHIFT) printf("LSHIFT ");
+//        if (mod & KMOD_RALT) printf("RALT ");
+//        if (mod & KMOD_LALT) printf("LALT ");
+//        if (mod & KMOD_CTRL) printf("CTRL ");
+//        if (mod & KMOD_SHIFT) printf("SHIFT ");
+//        if (mod & KMOD_ALT) printf("ALT ");
+//        printf("\n");
+//    }
+//
+//    /* Print all information about a key event */
+//    void PrintKeyInfo(SDL_KeyboardEvent *key) {
+//        /* Is it a release or a press? */
+//        if (key->type == SDL_KEYUP)
+//            printf("Release:- ");
+//        else
+//            printf("Press:- ");
+//
+//        /* Print the hardware scancode first */
+//        printf("Scancode: 0x%02X", key->keysym.scancode);
+//        /* Print the name of the key */
+//        printf(", Name: %s", SDL_GetKeyName(key->keysym.sym));
+//        PrintModifiers(static_cast<SDL_Keymod>(key->keysym.mod));
+//    }
+
     auto event(const FunctionCallbackInfo<Value> &args) {
         Isolate *isolate = args.GetIsolate();
+        Local<Context> context = isolate->GetCurrentContext();
         SDL_Event event;
 
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_QUIT:
                     args.GetReturnValue().Set(String::NewFromUtf8(isolate, "QUIT").ToLocalChecked());
+                    break;
+                case SDL_KEYDOWN: {
+                    Local<Object> obj = Object::New(isolate);
+                    obj->Set(context, String::NewFromUtf8(isolate, "eventType").ToLocalChecked(),
+                             String::NewFromUtf8(isolate, "KEYDOWN").ToLocalChecked()).FromJust();
+                    args.GetReturnValue().Set(obj);
+                }
                     break;
                 default:
                     args.GetReturnValue().Set(uint32_t(-1));
@@ -137,13 +191,13 @@ namespace nodesdl {
         // ----------------------------------------
         SDL_Surface *screen = SDL_GetWindowSurface(window);
         Uint32 color = SDL_MapRGB(screen->format, RGB_R, RGB_G, RGB_B);
-        SDL_FillRect(screen, NULL, color);
+        SDL_FillRect(screen, nullptr, color);
 //        SDL_UpdateWindowSurface(window);
     }
 
     void rect(const FunctionCallbackInfo<Value> &args) {
         Isolate *isolate = args.GetIsolate();
-        Local<Context> context = isolate->GetCurrentContext();
+//        Local<Context> context = isolate->GetCurrentContext();
         // Check the number of arguments passed.
         const int numberOfArguments = 6;
         if (args.Length() < numberOfArguments) {
@@ -163,14 +217,14 @@ namespace nodesdl {
         }
 
         // Get the arguments ----------------------
-        int x = args[0].As<Number>()->Value();
-        int y = args[1].As<Number>()->Value();
-        int w = args[2].As<Number>()->Value();
-        int h = args[3].As<Number>()->Value();
+        double x = args[0].As<Number>()->Value();
+        double y = args[1].As<Number>()->Value();
+        double w = args[2].As<Number>()->Value();
+        double h = args[3].As<Number>()->Value();
 
-        int RGB_R = args[4].As<Number>()->Value();
-        int RGB_G = args[5].As<Number>()->Value();
-        int RGB_B = args[6].As<Number>()->Value();
+        double rect_RGB_R = args[4].As<Number>()->Value();
+        double rect_RGB_G = args[5].As<Number>()->Value();
+        double rect_RGB_B = args[6].As<Number>()->Value();
 
         // ----------------------------------------
 
@@ -178,7 +232,7 @@ namespace nodesdl {
         Rect *rectPointer;
 //        std::cout << "Provided width: " << w << std::endl;
         SDL_Surface *screen = SDL_GetWindowSurface(window);
-        newRect.init(screen, x, y, w, h, RGB_R, RGB_G, RGB_B);
+        newRect.init(screen, x, y, w, h, rect_RGB_R, rect_RGB_G, rect_RGB_B);
 
         rectPointer = &newRect; // created pointer to current rect class-object
 
@@ -223,83 +277,11 @@ namespace nodesdl {
         myObj->blit(window);
     }
 
-    void updateRect(const FunctionCallbackInfo<Value> &args) {
-        Isolate *isolate = args.GetIsolate();
-
-        // Check the number of arguments passed.
-        if (args.Length() < 1) {
-            isolate->ThrowException(
-                    Exception::TypeError(
-                            String::NewFromUtf8(isolate, "Wrong number of arguments").ToLocalChecked()));
-            return;
-        }
-
-        // Check argument types
-        const int numberOfArguments = 8;
-        if (!args[0]->IsString()) {
-            isolate->ThrowException(
-                    Exception::TypeError(
-                            String::NewFromUtf8(isolate, "Wrong arguments").ToLocalChecked()));
-            return;
-        }
-        for (int i = 1; i < numberOfArguments; i++) {
-            if (!args[i]->IsNumber()) {
-                isolate->ThrowException(
-                        Exception::TypeError(
-                                String::NewFromUtf8(isolate, "Wrong arguments").ToLocalChecked()));
-                return;
-            }
-        }
-
-        // Get the arguments ----------------------
-        Local<String> str_shape_temp = args[0].As<String>();
-        char *charStr = new char[8192];
-        (*str_shape_temp)->WriteUtf8(isolate, charStr);
-        std::string str_shape = charStr;
-        delete charStr;
-
-        int x = args[1].As<Number>()->Value();
-        int y = args[2].As<Number>()->Value();
-        int w = args[2].As<Number>()->Value();
-        int h = args[4].As<Number>()->Value();
-
-        int RGB_R = args[5].As<Number>()->Value();
-        int RGB_G = args[6].As<Number>()->Value();
-        int RGB_B = args[7].As<Number>()->Value();
-
-
-        Local<String> raw_pointer = args[0].As<String>();
-        char *char_rawPointer = new char[8192];
-        (*raw_pointer)->WriteUtf8(isolate, char_rawPointer);
-        std::string str_pointer = char_rawPointer;
-        delete char_rawPointer;
-        // ----------------------------------------
-        std::stringstream ss;
-        ss << str_pointer;
-        long long unsigned int i;
-        ss >> std::hex >> i;
-        Rect *myObj = reinterpret_cast<Rect *>(reinterpret_cast<int *>(i));
-        myObj->update(x, y, w, h, RGB_R, RGB_G, RGB_B);
-        // ----------------------------------------
-//        int SDL_RenderClear(SDL_Renderer *renderer);
-//
-//        SDL_Surface *screen = SDL_GetWindowSurface(window);
-//        SDL_Surface *temp_screen = SDL_LoadBMP(str_shape.c_str());
-//        SDL_BlitSurface(temp_screen, NULL, screen, NULL);
-
-        SDL_UpdateWindowSurface(window);
-    }
-
     void clear() {
         SDL_Surface *screen = SDL_GetWindowSurface(window);
         Uint32 color = SDL_MapRGB(screen->format, RGB_R, RGB_G, RGB_B);
         SDL_RenderClear(renderer);
-        SDL_FillRect(screen, NULL, color);
-
-//        SDL_SetRenderDrawColor(renderer, RGB_R, RGB_G, RGB_B, 255);
-//        SDL_RenderPresent(renderer);
-//        SDL_RenderClear(renderer);
-//        SDL_UpdateWindowSurface(window);
+        SDL_FillRect(screen, nullptr, color);
     }
 
     void update() {
@@ -308,10 +290,7 @@ namespace nodesdl {
 
     void getTick(const FunctionCallbackInfo<Value> &arg) {
         Isolate *isolate = arg.GetIsolate();
-
-        Clock Time;
-        Uint64 time = Time.getTicks();
-//        std::cout << time;
+        Uint64 time = Clock::getTicks();
 
         if (arg.Length() >= 1) {
             isolate->ThrowException(
@@ -330,7 +309,6 @@ namespace nodesdl {
         NODE_SET_METHOD(exports, "screenColor", reinterpret_cast<v8::FunctionCallback>(screenColor));
         NODE_SET_METHOD(exports, "rect", reinterpret_cast<v8::FunctionCallback>(rect));
         NODE_SET_METHOD(exports, "blit", reinterpret_cast<v8::FunctionCallback>(blit));
-        NODE_SET_METHOD(exports, "updateRect", reinterpret_cast<v8::FunctionCallback>(updateRect));
         NODE_SET_METHOD(exports, "clear", reinterpret_cast<v8::FunctionCallback>(clear));
         NODE_SET_METHOD(exports, "getTick", reinterpret_cast<v8::FunctionCallback>(getTick));
         NODE_SET_METHOD(exports, "update", reinterpret_cast<v8::FunctionCallback>(update));
