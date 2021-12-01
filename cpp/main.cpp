@@ -152,12 +152,38 @@ namespace nodesdl {
                 case SDL_QUIT:
                     args.GetReturnValue().Set(String::NewFromUtf8(isolate, "QUIT").ToLocalChecked());
                     break;
+                case SDL_KEYUP:
                 case SDL_KEYDOWN: {
+                    Local<Object> obj = Object::New(isolate);
                     auto info = KeyHandler::keyInfo((SDL_KeyboardEvent *) &event.key);
-                    auto modifiers = KeyHandler::modifierInfo(
-                            static_cast<SDL_Keymod>(((SDL_KeyboardEvent *) &event.key)->keysym.mod));
+//                    auto modifiers = KeyHandler::modifierInfo(
+//                            static_cast<SDL_Keymod>(((SDL_KeyboardEvent *) &event.key)->keysym.mod));
                     std::cout << info[0] << std::endl;
-                    std::cout << modifiers[0] << std::endl;
+//                    std::cout << modifiers[0] << std::endl;
+
+                    auto keyEventType = info[0];
+                    auto scanCode = info[1];
+                    auto keyname = info[2];
+
+                    obj->Set(context,
+                             String::NewFromUtf8(isolate,
+                                                 "type").ToLocalChecked(),
+                             String::NewFromUtf8(isolate, keyEventType.c_str()).ToLocalChecked())
+                            .FromJust();
+
+                    obj->Set(context,
+                             String::NewFromUtf8(isolate,
+                                                 "scancode").ToLocalChecked(),
+                             String::NewFromUtf8(isolate, scanCode.c_str()).ToLocalChecked())
+                            .FromJust();
+                    obj->Set(context,
+                             String::NewFromUtf8(isolate,
+                                                 "keyname").ToLocalChecked(),
+                             String::NewFromUtf8(isolate, keyname.c_str()).ToLocalChecked())
+                            .FromJust();
+
+
+                    args.GetReturnValue().Set(obj);
                 }
                     break;
                 default:

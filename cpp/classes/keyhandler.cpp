@@ -5,17 +5,21 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <sstream>
 
 class KeyHandler {
 public:
     static std::vector<std::string> keyInfo(SDL_KeyboardEvent *key) {
         std::vector<std::string> info;
         if (key->type == SDL_KEYUP)
-            info.emplace_back("Release");
+            info.emplace_back("KEYUP");
         else
-            info.emplace_back("Push");
+            info.emplace_back("KEYDOWN");
 
-        info.emplace_back("0x%02X", key->keysym.scancode);
+        std::stringstream ss;
+        ss << std::hex << key->keysym.scancode;
+
+        info.emplace_back(ss.str());
         info.emplace_back(SDL_GetKeyName(key->keysym.sym));
         return info;
     }

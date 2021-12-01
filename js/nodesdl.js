@@ -18,8 +18,8 @@ function eventHandler(e) {
     if (e == -1) {
         console.log("default exit")
     }
-    if (e == "KEYDOWN") {
-        console.log("keydown: " + e);
+    if (typeof e === "object") {
+        console.log("keydown: " + Object.values(e));
     }
 }
 
