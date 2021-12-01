@@ -10,7 +10,7 @@
         "../cpp/main.cpp",
         "../cpp/classes/Rect.cpp",
         "../cpp/classes/Clock.cpp",
-        "../cpp/classes/keyhandler.cpp"
+        "../cpp/classes/keyhandler.cpp",
       ],
       "libraries": [
         "<(module_root_dir)/x64/SDL2main.lib", "<(module_root_dir)/x64/SDL2.lib"

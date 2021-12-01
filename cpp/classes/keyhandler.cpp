@@ -1,130 +1,48 @@
 //
-// Created by rishi on 30-11-2021.
+// Created by rishi on 01-12-2021.
 //
-
 #include "SDL.h"
+#include <iostream>
 #include <string>
 #include <vector>
 
 class KeyHandler {
 public:
-    std::string eventType;
-    int scancode{};
-    std::string name;
-    std::vector<std::string> modifiers;
+    static std::vector<std::string> keyInfo(SDL_KeyboardEvent *key) {
+        std::vector<std::string> info;
+        if (key->type == SDL_KEYUP)
+            info.emplace_back("Release");
+        else
+            info.emplace_back("Push");
 
-    void keyInfo(SDL_KeyboardEvent *key) {
-        eventType = "";
-        if (key->type == SDL_KEYUP) {
-            eventType = "Release";
-        } else {
-            eventType = "Press";
-        }
-        scancode = key->keysym.scancode;
-        name = SDL_GetKeyName(key->keysym.sym);
-
-//        Modifiers
-//        auto mod = static_cast<SDL_Keymod>(key->keysym.mod);
-//        No modofiers
-//        if (mod == KMOD_NONE) {
-//            printf("None\n");
-//            return;
-//        }
-//        if (mod & KMOD_NUM) modifiers.emplace_back("NUMLOCK ");
-//        if (mod & KMOD_CAPS) modifiers.emplace_back("CAPSLOCK ");
-//        if (mod & KMOD_LCTRL) modifiers.emplace_back("LCTRL ");
-//        if (mod & KMOD_RCTRL) modifiers.emplace_back("RCTRL ");
-//        if (mod & KMOD_RSHIFT) modifiers.emplace_back("RSHIFT ");
-//        if (mod & KMOD_LSHIFT) modifiers.emplace_back("LSHIFT ");
-//        if (mod & KMOD_RALT) modifiers.emplace_back("RALT ");
-//        if (mod & KMOD_LALT) modifiers.emplace_back("LALT ");
-//        if (mod & KMOD_CTRL) modifiers.emplace_back("CTRL ");
-//        if (mod & KMOD_SHIFT) modifiers.emplace_back("SHIFT ");
-//        if (mod & KMOD_ALT) modifiers.emplace_back("ALT ");
+        info.emplace_back("0x%02X", key->keysym.scancode);
+        info.emplace_back(SDL_GetKeyName(key->keysym.sym));
+        return info;
     }
 
+    static std::vector<std::string> modifierInfo(SDL_Keymod mod) {
+        /* If there are none then say so and return */
+        std::vector<std::string> modifiers;
 
+        if (mod == KMOD_NONE) {
+            printf("None\n");
+            return modifiers;
+        }
+
+        /* Check for the presence of each SDLMod value */
+        /* This looks messy, but there really isn't    */
+        /* a clearer way.                              */
+        if (mod & KMOD_NUM) modifiers.emplace_back("NUMLOCK ");
+        if (mod & KMOD_CAPS) modifiers.emplace_back("CAPSLOCK ");
+        if (mod & KMOD_LCTRL) modifiers.emplace_back("LCTRL ");
+        if (mod & KMOD_RCTRL) modifiers.emplace_back("RCTRL ");
+        if (mod & KMOD_RSHIFT) modifiers.emplace_back("RSHIFT ");
+        if (mod & KMOD_LSHIFT) modifiers.emplace_back("LSHIFT ");
+        if (mod & KMOD_RALT) modifiers.emplace_back("RALT ");
+        if (mod & KMOD_LALT) modifiers.emplace_back("LALT ");
+        if (mod & KMOD_CTRL) modifiers.emplace_back("CTRL ");
+        if (mod & KMOD_SHIFT) modifiers.emplace_back("SHIFT ");
+        if (mod & KMOD_ALT) modifiers.emplace_back("ALT ");
+        return modifiers;
+    }
 };
-
-//auto keyInfo(SDL_KeyboardEvent *key) {
-//    struct Details {
-//        std::string eventType;
-//        int scancode{};
-//        std::string name;
-//        std::vector<std::string> modifiers;
-//    };
-//    Details details;
-//    details.eventType = "";
-//    if (key->type == SDL_KEYUP) {
-//        details.eventType = "Release";
-//    } else {
-//        details.eventType = "Press";
-//    }
-//    details.scancode = key->keysym.scancode;
-//    details.name = SDL_GetKeyName(key->keysym.sym);
-//
-////        Modifiers
-//    auto mod = static_cast<SDL_Keymod>(key->keysym.mod);
-////        No modofiers
-////        if (mod == KMOD_NONE) {
-////            printf("None\n");
-////            return;
-////        }
-//    if (mod & KMOD_NUM) details.modifiers.emplace_back("NUMLOCK ");
-//    if (mod & KMOD_CAPS) details.modifiers.emplace_back("CAPSLOCK ");
-//    if (mod & KMOD_LCTRL) details.modifiers.emplace_back("LCTRL ");
-//    if (mod & KMOD_RCTRL) details.modifiers.emplace_back("RCTRL ");
-//    if (mod & KMOD_RSHIFT) details.modifiers.emplace_back("RSHIFT ");
-//    if (mod & KMOD_LSHIFT) details.modifiers.emplace_back("LSHIFT ");
-//    if (mod & KMOD_RALT) details.modifiers.emplace_back("RALT ");
-//    if (mod & KMOD_LALT) details.modifiers.emplace_back("LALT ");
-//    if (mod & KMOD_CTRL) details.modifiers.emplace_back("CTRL ");
-//    if (mod & KMOD_SHIFT) details.modifiers.emplace_back("SHIFT ");
-//    if (mod & KMOD_ALT) details.modifiers.emplace_back("ALT ");
-//
-//    return details;
-//}
-
-
-//class keyHandler {
-//public:
-//    struct Details {
-//        std::string eventType;
-//        int scancode;
-//        std::string name;
-//        std::vector<std::string> modifiers;
-//    };
-//    struct Details details;
-//
-//    auto keyInfo(SDL_KeyboardEvent *key) {
-//        details.eventType = "";
-//        if (key->type == SDL_KEYUP) {
-//            details.eventType = "Release";
-//        } else {
-//            details.eventType = "Press";
-//        }
-//        details.scancode = key->keysym.scancode;
-//        details.name = SDL_GetKeyName(key->keysym.sym);
-//
-////        Modifiers
-//        auto mod = static_cast<SDL_Keymod>(key->keysym.mod);
-////        No modofiers
-////        if (mod == KMOD_NONE) {
-////            printf("None\n");
-////            return;
-////        }
-//        if (mod & KMOD_NUM) details.modifiers.emplace_back("NUMLOCK ");
-//        if (mod & KMOD_CAPS) details.modifiers.emplace_back("CAPSLOCK ");
-//        if (mod & KMOD_LCTRL) details.modifiers.emplace_back("LCTRL ");
-//        if (mod & KMOD_RCTRL) details.modifiers.emplace_back("RCTRL ");
-//        if (mod & KMOD_RSHIFT) details.modifiers.emplace_back("RSHIFT ");
-//        if (mod & KMOD_LSHIFT) details.modifiers.emplace_back("LSHIFT ");
-//        if (mod & KMOD_RALT) details.modifiers.emplace_back("RALT ");
-//        if (mod & KMOD_LALT) details.modifiers.emplace_back("LALT ");
-//        if (mod & KMOD_CTRL) details.modifiers.emplace_back("CTRL ");
-//        if (mod & KMOD_SHIFT) details.modifiers.emplace_back("SHIFT ");
-//        if (mod & KMOD_ALT) details.modifiers.emplace_back("ALT ");
-//
-//        return details;
-//    }
-//};

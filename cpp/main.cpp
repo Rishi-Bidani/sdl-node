@@ -6,6 +6,8 @@
 #include <sstream>
 #include <algorithm> // for copy
 #include <iterator> // for ostream_iterator
+#include <cstring>
+#include <cstdio>
 // #include "SDL.h"
 #include "SDL.h"
 #include "../../../../Users/rishi/AppData/Local/node-gyp/Cache/17.0.1/include/node/node.h"
@@ -86,7 +88,7 @@ namespace nodesdl {
         if (SDL_Init(SDL_INIT_VIDEO) < 0) {
             printf("Error: SDL failed to initialize\nSDL Error: '%s'\n", SDL_GetError());
         }
-
+        /* Enable Unicode translation */
         if (fullscreen) {
             window = SDL_CreateWindow(stringTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width,
                                       height, SDL_WINDOW_RESIZABLE);
@@ -139,6 +141,7 @@ namespace nodesdl {
 //        PrintModifiers(static_cast<SDL_Keymod>(key->keysym.mod));
 //    }
 
+
     auto event(const FunctionCallbackInfo<Value> &args) {
         Isolate *isolate = args.GetIsolate();
         Local<Context> context = isolate->GetCurrentContext();
@@ -150,10 +153,11 @@ namespace nodesdl {
                     args.GetReturnValue().Set(String::NewFromUtf8(isolate, "QUIT").ToLocalChecked());
                     break;
                 case SDL_KEYDOWN: {
-                    Local<Object> obj = Object::New(isolate);
-                    obj->Set(context, String::NewFromUtf8(isolate, "eventType").ToLocalChecked(),
-                             String::NewFromUtf8(isolate, "KEYDOWN").ToLocalChecked()).FromJust();
-                    args.GetReturnValue().Set(obj);
+                    auto info = KeyHandler::keyInfo((SDL_KeyboardEvent *) &event.key);
+                    auto modifiers = KeyHandler::modifierInfo(
+                            static_cast<SDL_Keymod>(((SDL_KeyboardEvent *) &event.key)->keysym.mod));
+                    std::cout << info[0] << std::endl;
+                    std::cout << modifiers[0] << std::endl;
                 }
                     break;
                 default:

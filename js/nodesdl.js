@@ -18,7 +18,7 @@ function eventHandler(e) {
     if (e == -1) {
         console.log("default exit")
     }
-    if (typeof e === "object" && e.type == "KEYDOWN") {
+    if (e == "KEYDOWN") {
         console.log("keydown: " + e);
     }
 }
@@ -37,7 +37,6 @@ while (true) {
     }
     rect1.y = 200;
     const event = nodesdl.event();
-    console.log("event: " + event);
     if (event == "QUIT") {
         break;
     }
