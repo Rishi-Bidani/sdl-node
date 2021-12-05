@@ -9,10 +9,12 @@ const clock = new Clock();
 const time1 = clock.getTick();
 
 const img1 = new Image(100, 100, "./test.bmp")
-const rect1 = new Rect(0, 0, 500, 100, [0, 0, 200]);
+const rect1 = new Rect(0, 0, 500, 100, [0, 0, 200]); // x, y, width, height, color
 
-const image = img1.load();
+const image = img1.load(); // load image
 
+
+// Event Handler -> parameter passeed through the event in while loop
 function eventHandler(e) {
     if (e == -1) {
         console.log("default exit")
@@ -29,14 +31,15 @@ function eventHandler(e) {
 
 
 while (true) {
-    nodesdl.clear();
-    const time2 = new Clock().getTick();
-    const dt = time2 - time1;
-    nodesdl.screenColor(255, 100, 50);
+    nodesdl.clear(); // Clear screen for updated content in the next frame
+    // const time2 = new Clock().getTick(); // -> not working
+    // const dt = time2 - time1; // -> not working
+
+    nodesdl.screenColor(255, 100, 50); // Set screen color -> R, G, B
 
 
-    img1.blit(image);
-    rect1.blit();
+    img1.blit(image); // show image on screen
+    rect1.blit(); // show rect on screen
     if (rect1.x >= 1000) {
         rect1.x = 0;
     }
@@ -48,5 +51,5 @@ while (true) {
         break;
     }
     eventHandler(e);
-    nodesdl.update();
+    nodesdl.update(); // Updates the screen and allows items to be displayed
 }
