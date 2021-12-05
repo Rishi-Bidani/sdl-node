@@ -16,9 +16,15 @@ public:
     SDL_Surface *screen = nullptr;
     SDL_Rect rect{};
     SDL_Surface *rectSurface{};
+    SDL_Texture *texture{};
 
     SDL_Rect
-    init(SDL_Surface *Window, double X, double Y, double Width, double Height, double red, double green, double blue) {
+    init(
+            SDL_Surface *Window,
+            SDL_Renderer *renderer,
+            double X, double Y, double Width, double Height, double red,
+            double green, double blue
+    ) {
         screen = Window;
 
         x = X;
@@ -34,9 +40,15 @@ public:
         rect.w = width;
         rect.h = height;
 
-        Uint32 color = SDL_MapRGB(screen->format, RGB_R, RGB_G, RGB_B);
-        SDL_FillRect(screen, &rect, color);
-        rectSurface = SDL_LoadBMP(reinterpret_cast<const char *>(&rect));
+//        Uint32 color = SDL_MapRGB(screen->format, RGB_R, RGB_G, RGB_B);
+//        SDL_FillRect(screen, &rect, color);
+//        rectSurface = SDL_LoadBMP(reinterpret_cast<const char *>(&rect));
+////        texture = SDL_CreateTextureFromSurface(renderer, rectSurface);
+//        std::cout << "load texture :" << texture << std::endl;
+        SDL_RenderDrawRect(renderer, &rect);
+        SDL_SetRenderDrawColor(renderer, RGB_R, RGB_G, RGB_B, 255);
+        SDL_RenderFillRect(renderer, &rect);
+
         return rect;
     }
 
@@ -59,9 +71,15 @@ public:
         return rect;
     }
 
-    void blit(SDL_Window *window) const {
-        SDL_BlitSurface(rectSurface, nullptr, screen, nullptr);
-//        SDL_UpdateWindowSurface(window);
+    void blit(SDL_Window *window, SDL_Renderer *renderer) const {
+////        SDL_BlitSurface(rectSurface, nullptr, screen, nullptr);
+////        SDL_UpdateWindowSurface(window);
+//        std::cout << "blit texture: " << texture << std::endl;
+////        SDL_RenderCopy(renderer, texture, nullptr, &rect);
+//        std::cout << SDL_GetError() << std::endl;
+        SDL_RenderDrawRect(renderer, &rect);
+        SDL_SetRenderDrawColor(renderer, RGB_R, RGB_G, RGB_B, 255);
+        SDL_RenderFillRect(renderer, &rect);
     }
 
     SDL_Rect getRect() const {

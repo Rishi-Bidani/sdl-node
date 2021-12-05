@@ -11,11 +11,12 @@
 // #include "SDL.h"
 #include "SDL.h"
 #include "../../../../Users/rishi/AppData/Local/node-gyp/Cache/17.0.1/include/node/node.h"
-
+#include "../src/SDL2_image/include/SDL_image.h"
 // Custom Classes
 #include "./classes/Rect.cpp"
 #include "./classes/Clock.cpp"
 #include "./classes/keyhandler.cpp"
+#include "./classes/Image.cpp"
 
 namespace nodesdl {
     using v8::Array;
@@ -88,6 +89,11 @@ namespace nodesdl {
         if (SDL_Init(SDL_INIT_VIDEO) < 0) {
             printf("Error: SDL failed to initialize\nSDL Error: '%s'\n", SDL_GetError());
         }
+//        int imgFlags = IMG_INIT_PNG; // or IMG_INIT_JPG;
+        // not sure about the imgFlags parameter, read the docs.
+        if (!IMG_Init(IMG_INIT_JPG)) {
+            printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+        }
         /* Enable Unicode translation */
         if (fullscreen) {
             window = SDL_CreateWindow(stringTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width,
@@ -95,6 +101,10 @@ namespace nodesdl {
         } else {
             window = SDL_CreateWindow(stringTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width,
                                       height, 0);
+        }
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+        if (!renderer) {
+            printf("Error: SDL failed to initialize renderer\nSDL Error: '%s'\n", SDL_GetError());
         }
     }
 
@@ -243,9 +253,16 @@ namespace nodesdl {
         RGB_B = args[2].As<Number>()->Value();
 
         // ----------------------------------------
-        SDL_Surface *screen = SDL_GetWindowSurface(window);
-        Uint32 color = SDL_MapRGB(screen->format, RGB_R, RGB_G, RGB_B);
-        SDL_FillRect(screen, nullptr, color);
+//        SDL_Surface *screen = SDL_GetWindowSurface(window);
+//        Uint32 color = SDL_MapRGB(screen->format, RGB_R, RGB_G, RGB_B);
+//        SDL_FillRect(screen, nullptr, color);
+
+//        SDL_SetRenderDrawColor(renderer, RGB_R, RGB_G, RGB_B, 255);
+        SDL_Rect screenRect = {0, 0, static_cast<int>(width), static_cast<int>((height))};
+        SDL_RenderDrawRect(renderer, &screenRect);
+        SDL_SetRenderDrawColor(renderer, RGB_R, RGB_G, RGB_B, 255);
+        SDL_RenderFillRect(renderer, &screenRect);
+        
 //        SDL_UpdateWindowSurface(window);
     }
 
@@ -286,7 +303,7 @@ namespace nodesdl {
         Rect *rectPointer;
 //        std::cout << "Provided width: " << w << std::endl;
         SDL_Surface *screen = SDL_GetWindowSurface(window);
-        newRect.init(screen, x, y, w, h, rect_RGB_R, rect_RGB_G, rect_RGB_B);
+        newRect.init(screen, renderer, x, y, w, h, rect_RGB_R, rect_RGB_G, rect_RGB_B);
 
         rectPointer = &newRect; // created pointer to current rect class-object
 
@@ -296,6 +313,44 @@ namespace nodesdl {
         ss >> str_rectPointer;
 //        std::cout << "string stream: " << str_rectPointer << std::endl;
         args.GetReturnValue().Set(String::NewFromUtf8(isolate, str_rectPointer.c_str()).ToLocalChecked());
+    }
+
+    void image(const FunctionCallbackInfo<Value> &args) {
+        Isolate *isolate = args.GetIsolate();
+        // Check the number of arguments passed.
+        const int numberOfArguments = 3;
+        if (args.Length() < numberOfArguments) {
+            isolate->ThrowException(
+                    Exception::TypeError(
+                            String::NewFromUtf8(isolate, "Wrong number of arguments").ToLocalChecked()));
+            return;
+        }
+        // Check argument types
+        if (!args[0]->IsString()) {
+            isolate->ThrowException(
+                    Exception::TypeError(
+                            String::NewFromUtf8(isolate, "Wrong arguments").ToLocalChecked()));
+            return;
+        }
+        for (int i = 1; i < numberOfArguments; i++) {
+            if (!args[i]->IsNumber()) {
+                isolate->ThrowException(
+                        Exception::TypeError(
+                                String::NewFromUtf8(isolate, "Wrong arguments").ToLocalChecked()));
+                return;
+            }
+        }
+        v8::String::Utf8Value Path(isolate, args[0]);
+        std::string path(*Path);
+
+        double x = args[1].As<Number>()->Value();
+        double y = args[2].As<Number>()->Value();
+
+        SDL_Texture *texture = Image::load(renderer, path, x, y);
+        std::stringstream ss;
+        ss << texture;
+        std::string str_textureptr = ss.str();
+        args.GetReturnValue().Set(String::NewFromUtf8(isolate, str_textureptr.c_str()).ToLocalChecked());
     }
 
     void blit(const FunctionCallbackInfo<Value> &arg) {
@@ -328,7 +383,40 @@ namespace nodesdl {
         long long unsigned int i;
         ss >> std::hex >> i;
         Rect *myObj = reinterpret_cast<Rect *>(reinterpret_cast<int *>(i));
-        myObj->blit(window);
+        myObj->blit(window, renderer);
+    }
+
+    void imgBlit(const FunctionCallbackInfo<Value> &arg) {
+        Isolate *isolate = arg.GetIsolate();
+        Local<Context> context = isolate->GetCurrentContext();
+        // Check the number of arguments passed.
+        if (arg.Length() < 1) {
+            isolate->ThrowException(
+                    Exception::TypeError(
+                            String::NewFromUtf8(isolate, "Wrong number of arguments").ToLocalChecked()));
+            return;
+        }
+        // Check argument types
+        if (!arg[0]->IsString()) {
+            isolate->ThrowException(
+                    Exception::TypeError(
+                            String::NewFromUtf8(isolate, "Wrong arguments").ToLocalChecked()));
+            return;
+        }
+
+        // Get the arguments ----------------------
+        Local<String> raw_pointer = arg[0].As<String>();
+        char *char_rawPointer = new char[8192];
+        (*raw_pointer)->WriteUtf8(isolate, char_rawPointer);
+        std::string str_pointer = char_rawPointer;
+        delete char_rawPointer;
+        // ----------------------------------------
+        std::stringstream ss;
+        ss << str_pointer;
+        long long unsigned int i;
+        ss >> std::hex >> i;
+        auto *myTexture = reinterpret_cast<Image *>(reinterpret_cast<int *>(i));
+        Image::blit(reinterpret_cast<SDL_Surface *>(window), renderer, reinterpret_cast<SDL_Texture *>(myTexture));
     }
 
     void clear() {
@@ -339,7 +427,8 @@ namespace nodesdl {
     }
 
     void update() {
-        SDL_UpdateWindowSurface(window);
+        SDL_RenderPresent(renderer);
+//        SDL_UpdateWindowSurface(window);
     }
 
     void getTick(const FunctionCallbackInfo<Value> &arg) {
@@ -366,6 +455,8 @@ namespace nodesdl {
         NODE_SET_METHOD(exports, "clear", reinterpret_cast<v8::FunctionCallback>(clear));
         NODE_SET_METHOD(exports, "getTick", reinterpret_cast<v8::FunctionCallback>(getTick));
         NODE_SET_METHOD(exports, "update", reinterpret_cast<v8::FunctionCallback>(update));
+        NODE_SET_METHOD(exports, "image", reinterpret_cast<v8::FunctionCallback>(image));
+        NODE_SET_METHOD(exports, "imgblit", reinterpret_cast<v8::FunctionCallback>(imgBlit));
     }
 
     NODE_MODULE(NODE_GYP_MODULE_NAME, Initialise);
