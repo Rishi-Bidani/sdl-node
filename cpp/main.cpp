@@ -5,10 +5,6 @@
 #include <cstdint>
 #include <sstream>
 #include <algorithm> // for copy
-#include <iterator> // for ostream_iterator
-#include <cstring>
-#include <cstdio>
-// #include "SDL.h"
 #include "SDL.h"
 #include "../../../../Users/rishi/AppData/Local/node-gyp/Cache/17.0.1/include/node/node.h"
 #include "../src/SDL2_image/include/SDL_image.h"
@@ -262,7 +258,7 @@ namespace nodesdl {
         SDL_RenderDrawRect(renderer, &screenRect);
         SDL_SetRenderDrawColor(renderer, RGB_R, RGB_G, RGB_B, 255);
         SDL_RenderFillRect(renderer, &screenRect);
-        
+
 //        SDL_UpdateWindowSurface(window);
     }
 

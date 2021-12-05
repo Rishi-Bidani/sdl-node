@@ -15,8 +15,6 @@ public:
     double RGB_B{};
     SDL_Surface *screen = nullptr;
     SDL_Rect rect{};
-    SDL_Surface *rectSurface{};
-    SDL_Texture *texture{};
 
     SDL_Rect
     init(
@@ -40,11 +38,6 @@ public:
         rect.w = width;
         rect.h = height;
 
-//        Uint32 color = SDL_MapRGB(screen->format, RGB_R, RGB_G, RGB_B);
-//        SDL_FillRect(screen, &rect, color);
-//        rectSurface = SDL_LoadBMP(reinterpret_cast<const char *>(&rect));
-////        texture = SDL_CreateTextureFromSurface(renderer, rectSurface);
-//        std::cout << "load texture :" << texture << std::endl;
         SDL_RenderDrawRect(renderer, &rect);
         SDL_SetRenderDrawColor(renderer, RGB_R, RGB_G, RGB_B, 255);
         SDL_RenderFillRect(renderer, &rect);
@@ -72,23 +65,8 @@ public:
     }
 
     void blit(SDL_Window *window, SDL_Renderer *renderer) const {
-////        SDL_BlitSurface(rectSurface, nullptr, screen, nullptr);
-////        SDL_UpdateWindowSurface(window);
-//        std::cout << "blit texture: " << texture << std::endl;
-////        SDL_RenderCopy(renderer, texture, nullptr, &rect);
-//        std::cout << SDL_GetError() << std::endl;
         SDL_RenderDrawRect(renderer, &rect);
         SDL_SetRenderDrawColor(renderer, RGB_R, RGB_G, RGB_B, 255);
         SDL_RenderFillRect(renderer, &rect);
     }
-
-    SDL_Rect getRect() const {
-        return rect;
-    }
-
-    int getWidth() const {
-        std::cout << width;
-        return width;
-    }
-
 };

@@ -1,23 +1,19 @@
 const nodesdl = require('./build/Release/nodesdl');
-const Rect = require('./classes/rect');
-const Clock = require('./classes/clock');
-const Event = require('./classes/events');
-const Image = require('./classes/image');
+const Rect = require('./classes/rect'); // Allows you to create rectangles
+const Clock = require('./classes/clock'); // doesn't work yet -> intended for timing stuff and FPS
+const Event = require('./classes/events'); // Keydown keyup events etc
+const Image = require('./classes/image'); // Allows you to put images on the screen
 
 nodesdl.init(1000, 720, "hello world", false);
 const clock = new Clock();
 const time1 = clock.getTick();
 
-
-// console.log("rect1: " + rect1);
 const img1 = new Image(100, 100, "./test.bmp")
 const rect1 = new Rect(0, 0, 500, 100, [0, 0, 200]);
 
 const image = img1.load();
-// img1.blit()
 
 function eventHandler(e) {
-    // console.log("event: " + e.type);
     if (e == -1) {
         console.log("default exit")
     }
@@ -36,7 +32,6 @@ while (true) {
     nodesdl.clear();
     const time2 = new Clock().getTick();
     const dt = time2 - time1;
-    // console.log("dt: " + dt);
     nodesdl.screenColor(255, 100, 50);
 
 
